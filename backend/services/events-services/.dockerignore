@@ -1,0 +1,42 @@
+# Node.js dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.*
+
+# Logs
+logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker & CI
+.dockerignore
+docker-compose.yml
+Dockerfile.dev
+
+# IDE/editor config
+.vscode
+.idea
+*.swp
+
+# Testing/coverage
+coverage
+jest-output
+*.lcov
+
+# Build artifacts
+dist
+build
+.tmp
+.cache
