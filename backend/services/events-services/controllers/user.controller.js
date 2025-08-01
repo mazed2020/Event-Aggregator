@@ -2,36 +2,13 @@ const { default: mongoose } = require('mongoose');
 const User = require('../models/user.model');
 const Hackathon = require('../models/hackathon.model')
 const bcrypt = require('bcrypt');
+const {generateToken,verifyToken} = require('../utils/jwtTokenGeneration')
 
 const registerUser = async (req, res) => {
     try {
-        if(!Array.isArray(req.body)) {
-            const user = await User.create({
-                ...req.body,
-                password: await bcrypt.hash(req.body.password, 10)
-            });
-            user.save();
-            return res.status(201).json({
-                message: 'User created successfully',
-                data: user
-            });
-        }else{
-            
-        const usersData = await Promise.all(
-            req.body.map(async (user) => ({
-                ...user,
-                password: await bcrypt.hash(user.password, 10)
-            }))
-        );
-
-        const users = await User.insertMany(usersData);
-
-        res.status(201).json({
-            message: `${users.length} user(s) created successfully`,
-            data: users
-        });
-
-        }
+           const user = await User.create(req.body);
+           user.save();
+        res.status(201).json({ message: 'User registered successfully',data: user });
 
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -40,15 +17,27 @@ const registerUser = async (req, res) => {
 
 const UserLogin = async (req, res) => {
     try {
+
+        
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
+         
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
+
+        const token = generateToken(email, password);
+        res.cookie("token", token,
+        { 
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 24 * 60 * 60 * 1000
+         });
 
         res.status(200).json({ message: 'Login successful', user });
     } catch (error) {
